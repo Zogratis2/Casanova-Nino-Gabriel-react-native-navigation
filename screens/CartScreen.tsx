@@ -1,16 +1,17 @@
-import { View, Text, Button, FlatList, Pressable, StyleSheet } from 'react-native';
+// Updated CartScreen.tsx – now shows product images exactly like in HomeScreen
+import { View, Text, Button, FlatList, Pressable, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../contexts/CartContext';
-import { useTheme } from '../App'; // Adjust path if App.tsx is in a different location
-import { COLORS } from '../styles/GlobalStyles';
+import { useTheme } from '../App';
+import { COLORS, getStyles } from '../styles/GlobalStyles';
 
 export default function CartScreen() {
   const navigation = useNavigation<any>();
   const { cart, increaseQty, decreaseQty } = useCart();
 
-  // Added: Get manual dark mode state from the theme context in App.tsx
   const { isDarkMode } = useTheme();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
+  const globalStyles = getStyles(isDarkMode);
 
   return (
     <View style={{ padding: 20, flex: 1, backgroundColor: theme.background }}>
@@ -25,9 +26,14 @@ export default function CartScreen() {
             </View>
           }
           renderItem={({ item }) => (
-            <View style={[styles.row, { backgroundColor: theme.surface, borderRadius: 12, paddingHorizontal: 10 }]}>
-              <Text style={[styles.name, { color: theme.textPrimary }]}>{item.name}</Text>
-              <Text style={{ color: theme.textPrimary }}>${item.price * item.quantity}</Text>
+            <View style={globalStyles.card}>
+              <Image source={{ uri: item.image }} style={globalStyles.img} />
+
+              <View style={{ flex: 1 }}>
+                <Text style={globalStyles.title}>{item.name}</Text>
+                <Text style={globalStyles.price}>₱{item.price * item.quantity}</Text>
+              </View>
+
               <View style={styles.qtyBox}>
                 <Pressable 
                   onPress={() => decreaseQty(item.id)}
@@ -38,7 +44,7 @@ export default function CartScreen() {
                 >
                   <Text style={[styles.qtyBtn, { color: theme.textPrimary }]}>-</Text>
                 </Pressable>
-                <Text style={{ color: theme.textPrimary }}>{item.quantity}</Text>
+                <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: 'bold' }}>{item.quantity}</Text>
                 <Pressable 
                   onPress={() => increaseQty(item.id)}
                   hitSlop={10}
@@ -60,9 +66,6 @@ export default function CartScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15 },
-  name: { fontSize: 16 },
-  qtyBox: { flexDirection: 'row', alignItems: 'center', 
-  gap: 10 },
-  qtyBtn: { fontSize: 20, paddingHorizontal: 10 }
+  qtyBox: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  qtyBtn: { fontSize: 24, paddingHorizontal: 10 }
 });

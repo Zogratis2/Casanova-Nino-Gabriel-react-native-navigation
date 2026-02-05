@@ -1,16 +1,17 @@
-import { View, Text, Button, Alert } from 'react-native';
+// Updated CheckoutScreen.tsx – now shows product images exactly like in HomeScreen
+import { View, Text, Button, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../contexts/CartContext';
-import { useTheme } from '../App'; // Adjust path if App.tsx is in a different location
-import { COLORS } from '../styles/GlobalStyles';
+import { useTheme } from '../App';
+import { COLORS, getStyles } from '../styles/GlobalStyles';
 
 export default function CheckoutScreen() {
   const navigation = useNavigation<any>();
   const { cart, clearCart } = useCart();
 
-  // Added: Get manual dark mode state from the theme context in App.tsx
   const { isDarkMode } = useTheme();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
+  const globalStyles = getStyles(isDarkMode);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -28,24 +29,29 @@ export default function CheckoutScreen() {
 
   return (
     <View style={{ padding: 20, flex: 1, backgroundColor: theme.background }}>
-      {cart.map((item) => (
-        <View 
-          key={item.id} 
-          style={{
-            backgroundColor: theme.surface,
-            padding: 15,
-            marginVertical: 8,
-            borderRadius: 12,
-          }}
-        >
-          <Text style={{ color: theme.textPrimary, fontSize: 16 }}>
-            {item.name} - ${item.price * item.quantity}
-          </Text>
-        </View>
-      ))}
-      <Text style={{ fontSize: 20, marginVertical: 20, color: theme.textPrimary }}>
-        Total: ${total}
+      <View style={{ flex: 1 }}>
+        {cart.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: 20, color: theme.textPrimary }}>Your cart is empty</Text>
+          </View>
+        ) : (
+          cart.map((item) => (
+            <View key={item.id} style={globalStyles.card}>
+              <Image source={{ uri: item.image }} style={globalStyles.img} />
+
+              <View style={{ flex: 1 }}>
+                <Text style={globalStyles.title}>{item.name}</Text>
+                <Text style={globalStyles.price}>₱{item.price * item.quantity}</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      <Text style={{ fontSize: 22, marginVertical: 20, color: theme.textPrimary, textAlign: 'center', fontWeight: 'bold' }}>
+        Total: ₱{total}
       </Text>
+
       <Button title="Checkout" onPress={handleCheckout} />
     </View>
   );
