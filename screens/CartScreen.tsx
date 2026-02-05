@@ -1,5 +1,4 @@
-// Updated CartScreen.tsx – now shows product images exactly like in HomeScreen
-import { View, Text, Button, FlatList, Pressable, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, Pressable, Image, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../App';
@@ -13,16 +12,24 @@ export default function CartScreen() {
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
   const globalStyles = getStyles(isDarkMode);
 
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const isEmpty = cart.length === 0;
+
+  const contentContainerStyle = isEmpty
+    ? { flexGrow: 1 } // Centers empty message vertically
+    : { paddingBottom: 100 }; // Extra space so last item isn't hidden under total + button
+
   return (
-    <View style={{ padding: 20, flex: 1, backgroundColor: theme.background }}>
+    <View style={{ flex: 1, backgroundColor: theme.background, padding: 20 }}>
       <View style={{ flex: 1 }}>
         <FlatList
           data={cart}
           keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={contentContainerStyle}
           ListEmptyComponent={
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ fontSize: 20, color: theme.textPrimary, marginBottom: 10 }}>Your cart is empty</Text>
-              <Text style={{ fontSize: 16, color: theme.textSecondary }}>Add items from the home screen</Text>
+            <View style={globalStyles.cartEmptyContainer}>
+              <Text style={globalStyles.cartEmptyTitle}>Your cart is empty</Text>
+              <Text style={globalStyles.cartEmptySubtitle}>Add items from the home screen</Text>
             </View>
           }
           renderItem={({ item }) => (
@@ -34,25 +41,23 @@ export default function CartScreen() {
                 <Text style={globalStyles.price}>₱{item.price * item.quantity}</Text>
               </View>
 
-              <View style={styles.qtyBox}>
-                <Pressable 
+              <View style={globalStyles.cartQtyContainer}>
+                <Pressable
                   onPress={() => decreaseQty(item.id)}
                   hitSlop={10}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.7 : 1
-                  })}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 >
-                  <Text style={[styles.qtyBtn, { color: theme.textPrimary }]}>-</Text>
+                  <Text style={globalStyles.cartQtyBtnText}>-</Text>
                 </Pressable>
-                <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: 'bold' }}>{item.quantity}</Text>
-                <Pressable 
+
+                <Text style={globalStyles.cartQtyAmount}>{item.quantity}</Text>
+
+                <Pressable
                   onPress={() => increaseQty(item.id)}
                   hitSlop={10}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.7 : 1
-                  })}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 >
-                  <Text style={[styles.qtyBtn, { color: theme.textPrimary }]}>+</Text>
+                  <Text style={globalStyles.cartQtyBtnText}>+</Text>
                 </Pressable>
               </View>
             </View>
@@ -60,12 +65,20 @@ export default function CartScreen() {
         />
       </View>
 
-      <Button title="Proceed to Checkout" onPress={() => navigation.navigate('Checkout' as never)} />
+      {/* Total + native Button – exactly like HomeScreen's bottom <Button> structure */}
+      {!isEmpty && (
+        <View>
+          <View style={globalStyles.cartTotalRow}>
+            <Text style={globalStyles.cartTotalText}>Total</Text>
+            <Text style={globalStyles.cartTotalText}>₱{total}</Text>
+          </View>
+
+          <Button
+            title="PROCEED TO CHECKOUT"
+            onPress={() => navigation.navigate('Checkout' as never)}
+          />
+        </View>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  qtyBox: { flexDirection: 'row', alignItems: 'center', gap: 15 },
-  qtyBtn: { fontSize: 24, paddingHorizontal: 10 }
-});

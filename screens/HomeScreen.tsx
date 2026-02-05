@@ -1,9 +1,9 @@
-import { View, Text, Pressable, FlatList, Image, Button } from 'react-native';
-import { useLayoutEffect } from 'react';
+import { View, Text, Pressable, FlatList, Image, Button, TextInput, Keyboard } from 'react-native';
+import { useLayoutEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useCart, Product } from '../contexts/CartContext';
 import { getStyles, COLORS } from '../styles/GlobalStyles';
-import { useTheme } from '../App'; // Adjust path if App.tsx is in a different location
+import { useTheme } from '../App';
 
 const products: Product[] = [
   { id: 1, name: 'Laptop', price: 1200, image: 'https://www.itech.ph/wp-content/uploads/2024/09/E1504FA-L11066WSM-450x577.jpg' },
@@ -22,14 +22,16 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { addToCart, cart } = useCart();
 
-  // Manual dark mode from the theme context in App.tsx
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
-
-  // Get theme for background (consistent with GlobalStyles)
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
-  // Always hide tab bar on Home screen
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   useLayoutEffect(() => {
     navigation.setOptions({
       tabBarStyle: { display: 'none' },
@@ -38,14 +40,69 @@ export default function HomeScreen() {
 
   return (
     <View style={{ padding: 20, flex: 1, backgroundColor: theme.background }}>
+      {/* Search Bar with custom clear button */}
+      <View style={{ position: 'relative', marginBottom: 15 }}>
+        <TextInput
+          placeholder="Search products..."
+          placeholderTextColor={theme.textSecondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={{
+            backgroundColor: theme.surface,
+            paddingHorizontal: 15,
+            paddingVertical: 12,
+            paddingRight: 40,
+            borderRadius: 10,
+            fontSize: 16,
+            color: theme.textPrimary,
+            borderWidth: 1,
+            borderColor: theme.border,
+          }}
+          autoCorrect={false}
+          returnKeyType="search"
+          onSubmitEditing={() => Keyboard.dismiss()} // Dismiss keyboard (and stop cursor blink) when pressing "Search"
+        />
+
+        {/* Custom clear button */}
+        {searchQuery.length > 0 && (
+          <Pressable
+            onPress={() => setSearchQuery('')}
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: 10,
+              width: 30,
+              height: 30,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: 15,
+              backgroundColor: theme.border,
+            }}
+            hitSlop={10}
+          >
+            <Text style={{ fontSize: 18, color: theme.textSecondary }}>×</Text>
+          </Pressable>
+        )}
+      </View>
+
+      {/* Product List */}
       <View style={{ flex: 1 }}>
         <FlatList
-          data={products}
+          data={filteredProducts}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{
-            // Small bottom padding for breathing room above the button (matches CartScreen feel)
             paddingBottom: 20,
           }}
+          keyboardShouldPersistTaps="handled" // Tap anywhere in list (items or empty space) dismisses keyboard
+          ListEmptyComponent={
+            searchQuery.length > 0 ? (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 18, color: theme.textPrimary }}>
+                  No products found for "{searchQuery}"
+                </Text>
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <View style={styles.card}>
               <Image source={{ uri: item.image }} style={styles.img} />
@@ -69,7 +126,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Native <Button> – now in exactly the same position and structure as "Proceed to Checkout" in CartScreen */}
+      {/* Bottom Button */}
       <Button
         title={`GO TO CART${cart.length > 0 ? ` (${cart.length})` : ''}`}
         onPress={() => navigation.navigate('Cart')}

@@ -10,12 +10,12 @@ export const COLORS = {
     primaryButton: '#007bff',
   },
   dark: {
-    background: '#000000',     // pure black (or change to '#121212' for softer dark)
+    background: '#000000',
     surface: '#1E1E1E',
     textPrimary: '#FFFFFF',
     textSecondary: '#CCCCCC',
     border: '#333333',
-    primaryButton: '#0056b3',  // slightly darker blue for better contrast in dark mode
+    primaryButton: '#0056b3',
   },
 };
 
@@ -30,7 +30,6 @@ export const getStyles = (isDarkMode: boolean) => {
       backgroundColor: theme.surface,
       padding: 12,
       borderRadius: 12,
-      // Optional shadow for nicer card elevation (works well in both modes)
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
@@ -92,11 +91,10 @@ export const getStyles = (isDarkMode: boolean) => {
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: theme.primaryButton,  // uses darker blue in dark mode
+      backgroundColor: theme.primaryButton,
       padding: 16,
       alignItems: 'center',
       justifyContent: 'center',
-      // Safe area handling for iOS notch/home indicator – ensures button reaches very bottom
       paddingBottom: Platform.OS === 'ios' ? 34 : 16,
     },
 
@@ -104,6 +102,57 @@ export const getStyles = (isDarkMode: boolean) => {
       color: 'white',
       fontSize: 18,
       fontWeight: 'bold',
+    },
+
+    // Cart-specific styles
+    cartQtyContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 15,
+    },
+
+    cartQtyBtnText: {
+      fontSize: 24,
+      paddingHorizontal: 10,
+      color: theme.textPrimary,
+    },
+
+    cartQtyAmount: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: theme.textPrimary,
+    },
+
+    cartEmptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
+    cartEmptyTitle: {
+      fontSize: 20,
+      color: theme.textPrimary,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+
+    cartEmptySubtitle: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      textAlign: 'center',
+    },
+
+    cartTotalRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      marginBottom: 10,
+    },
+
+    cartTotalText: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: theme.textPrimary,
     },
   });
 };
