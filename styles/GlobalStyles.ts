@@ -1,3 +1,4 @@
+// styles/GlobalStyles.ts – Complete and final version with all accumulated styles
 import { StyleSheet, Platform } from 'react-native';
 
 export const COLORS = {
@@ -153,6 +154,13 @@ export const getStyles = (isDarkMode: boolean) => {
       fontSize: 20,
       fontWeight: 'bold',
       color: theme.textPrimary,
+    },
+
+    // Checkout-specific style
+    checkoutQuantityText: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      marginTop: 5,
     },
   });
 };
