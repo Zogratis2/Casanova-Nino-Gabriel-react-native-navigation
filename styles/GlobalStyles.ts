@@ -1,84 +1,109 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
-export const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    marginVertical: 10,
-    alignItems: 'center'
+export const COLORS = {
+  light: {
+    background: '#FFFFFF',
+    surface: '#FFFFFF',
+    textPrimary: '#000000',
+    textSecondary: '#333333',
+    border: '#e0e0e0',
+    primaryButton: '#007bff',
   },
-
-  img: {
-    width: 80,
-    height: 80,
-    marginRight: 10,
-    borderRadius: 10
+  dark: {
+    background: '#000000',     // pure black (or change to '#121212' for softer dark)
+    surface: '#1E1E1E',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#CCCCCC',
+    border: '#333333',
+    primaryButton: '#0056b3',  // slightly darker blue for better contrast in dark mode
   },
+};
 
-  title: {
-    fontSize: 18,
-    fontWeight: '600'
-  },
+export const getStyles = (isDarkMode: boolean) => {
+  const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
-  price: {
-    fontSize: 16,
-    opacity: 0.7
-  },
+  return StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      marginVertical: 10,
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      padding: 12,
+      borderRadius: 12,
+      // Optional shadow for nicer card elevation (works well in both modes)
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
 
-  btn: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 8
-  },
+    img: {
+      width: 80,
+      height: 80,
+      marginRight: 10,
+      borderRadius: 10,
+    },
 
-  btnText: {
-    color: '#fff'
-  },
+    title: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: theme.textPrimary,
+    },
 
- footer: {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  padding: 10,
-  backgroundColor: 'white',
-  borderTopWidth: 1,
-  borderColor: '#e0e0e0',
-},
+    price: {
+      fontSize: 16,
+      opacity: 0.7,
+      color: theme.textPrimary,
+    },
 
+    btn: {
+      backgroundColor: theme.primaryButton,
+      padding: 10,
+      borderRadius: 8,
+    },
 
-  badge: {
-    position: 'absolute',
-    right: 10,
-    top: 0,
-    backgroundColor: 'red',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
+    btnText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
 
-badgeText: {
-  color: 'white',
-  fontWeight: 'bold'
-},
+    badge: {
+      position: 'absolute',
+      right: 10,
+      top: 0,
+      backgroundColor: 'red',
+      borderRadius: 12,
+      width: 24,
+      height: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-bottomButton: {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: '#007bff',
-  padding: 16,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+    badgeText: {
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: 12,
+    },
 
-bottomButtonText: {
-  color: 'white',
-  fontSize: 16,
-  fontWeight: 'bold',
-},
+    bottomButton: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: theme.primaryButton,  // uses darker blue in dark mode
+      padding: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      // Safe area handling for iOS notch/home indicator – ensures button reaches very bottom
+      paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    },
 
-
-});
+    bottomButtonText: {
+      color: 'white',
+      fontSize: 18,
+      fontWeight: 'bold',
+    },
+  });
+};
