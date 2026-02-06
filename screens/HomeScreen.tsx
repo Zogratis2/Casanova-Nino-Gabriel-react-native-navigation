@@ -29,16 +29,16 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const initialStocks: { [key: number]: number } = {
-    1: 5,   // Laptop
-    2: 10,  // Headphones
-    3: 8,   // Keyboard
-    4: 15,  // Mouse
-    5: 2,   // Stuff Toy (low for testing)
-    6: 12,  // Jeans
-    7: 20,  // Shirt
-    8: 7,   // Sneakers
-    9: 9,   // Sling Bag
-    10: 6,  // Jacket
+    1: 5,
+    2: 10,
+    3: 8,
+    4: 15,
+    5: 2,
+    6: 12,
+    7: 20,
+    8: 7,
+    9: 9,
+    10: 6,
   };
 
   const filteredProducts = products.filter((product) =>
@@ -116,8 +116,9 @@ export default function HomeScreen() {
             ) : null
           }
           renderItem={({ item }) => {
-            const cartQty = cart.find((c) => c.id === item.id)?.quantity || 0;
-            const availableStock = (initialStocks[item.id] || 0) - cartQty;
+            const currentQty = cart.find((c) => c.id === item.id)?.quantity || 0;
+            const availableStock = (initialStocks[item.id] || 0) - currentQty;
+            const canAdd = availableStock > 0;
 
             return (
               <View style={styles.card}>
@@ -126,13 +127,13 @@ export default function HomeScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.title}>{item.name}</Text>
                   <Text style={styles.price}>₱{item.price}</Text>
-                  {/* Shows remaining available stock (returns to original when item is fully removed from cart) */}
                   <Text style={{ fontSize: 14, color: theme.textSecondary, marginTop: 4 }}>
                     Stock: {availableStock}
                   </Text>
                 </View>
 
-                {availableStock > 0 ? (
+                {/* Button with quantity inside text when applicable */}
+                {canAdd ? (
                   <Pressable
                     onPress={() => addToCart(item)}
                     style={({ pressed }) => [
@@ -140,7 +141,14 @@ export default function HomeScreen() {
                       pressed && { opacity: 0.8 },
                     ]}
                   >
-                    <Text style={styles.btnText}>Add to Cart</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={styles.btnText}>Add to Cart</Text>
+                      {currentQty > 0 && (
+                        <Text style={[styles.btnText, { marginLeft: 8 }]}>
+                          ({currentQty})
+                        </Text>
+                      )}
+                    </View>
                   </Pressable>
                 ) : (
                   <View style={[styles.btn, { backgroundColor: theme.surface }]}>
@@ -155,7 +163,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Bottom Button */}
+      {/* Bottom Button – shows only the count of distinct items */}
       <Button
         title={`GO TO CART${cart.length > 0 ? ` (${cart.length})` : ''}`}
         onPress={() => navigation.navigate('Cart')}
