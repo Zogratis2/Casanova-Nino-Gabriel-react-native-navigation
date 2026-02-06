@@ -28,6 +28,19 @@ export default function HomeScreen() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
+  const initialStocks: { [key: number]: number } = {
+    1: 5,   // Laptop
+    2: 10,  // Headphones
+    3: 8,   // Keyboard
+    4: 15,  // Mouse
+    5: 2,   // Stuff Toy (low for testing)
+    6: 12,  // Jeans
+    7: 20,  // Shirt
+    8: 7,   // Sneakers
+    9: 9,   // Sling Bag
+    10: 6,  // Jacket
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -60,10 +73,9 @@ export default function HomeScreen() {
           }}
           autoCorrect={false}
           returnKeyType="search"
-          onSubmitEditing={() => Keyboard.dismiss()} // Dismiss keyboard (and stop cursor blink) when pressing "Search"
+          onSubmitEditing={() => Keyboard.dismiss()}
         />
 
-        {/* Custom clear button */}
         {searchQuery.length > 0 && (
           <Pressable
             onPress={() => setSearchQuery('')}
@@ -93,7 +105,7 @@ export default function HomeScreen() {
           contentContainerStyle={{
             paddingBottom: 20,
           }}
-          keyboardShouldPersistTaps="handled" // Tap anywhere in list (items or empty space) dismisses keyboard
+          keyboardShouldPersistTaps="handled"
           ListEmptyComponent={
             searchQuery.length > 0 ? (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -103,26 +115,43 @@ export default function HomeScreen() {
               </View>
             ) : null
           }
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Image source={{ uri: item.image }} style={styles.img} />
+          renderItem={({ item }) => {
+            const cartQty = cart.find((c) => c.id === item.id)?.quantity || 0;
+            const availableStock = (initialStocks[item.id] || 0) - cartQty;
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{item.name}</Text>
-                <Text style={styles.price}>₱{item.price}</Text>
+            return (
+              <View style={styles.card}>
+                <Image source={{ uri: item.image }} style={styles.img} />
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.title}>{item.name}</Text>
+                  <Text style={styles.price}>₱{item.price}</Text>
+                  {/* Shows remaining available stock (returns to original when item is fully removed from cart) */}
+                  <Text style={{ fontSize: 14, color: theme.textSecondary, marginTop: 4 }}>
+                    Stock: {availableStock}
+                  </Text>
+                </View>
+
+                {availableStock > 0 ? (
+                  <Pressable
+                    onPress={() => addToCart(item)}
+                    style={({ pressed }) => [
+                      styles.btn,
+                      pressed && { opacity: 0.8 },
+                    ]}
+                  >
+                    <Text style={styles.btnText}>Add to Cart</Text>
+                  </Pressable>
+                ) : (
+                  <View style={[styles.btn, { backgroundColor: theme.surface }]}>
+                    <Text style={[styles.btnText, { color: theme.textSecondary }]}>
+                      Out of Stock
+                    </Text>
+                  </View>
+                )}
               </View>
-
-              <Pressable
-                onPress={() => addToCart(item)}
-                style={({ pressed }) => [
-                  styles.btn,
-                  pressed && { opacity: 0.8 },
-                ]}
-              >
-                <Text style={styles.btnText}>Add to Cart</Text>
-              </Pressable>
-            </View>
-          )}
+            );
+          }}
         />
       </View>
 
