@@ -20,26 +20,15 @@ const products: Product[] = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
-  const { addToCart, cart } = useCart();
+
+  // 👇 NOW USING STOCKS FROM CONTEXT
+  const { addToCart, cart, stocks } = useCart();
 
   const { isDarkMode } = useTheme();
   const styles = getStyles(isDarkMode);
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
   const [searchQuery, setSearchQuery] = useState('');
-
-  const initialStocks: { [key: number]: number } = {
-    1: 5,
-    2: 10,
-    3: 8,
-    4: 15,
-    5: 2,
-    6: 12,
-    7: 20,
-    8: 7,
-    9: 9,
-    10: 6,
-  };
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -53,7 +42,7 @@ export default function HomeScreen() {
 
   return (
     <View style={{ padding: 20, flex: 1, backgroundColor: theme.background }}>
-      {/* Search Bar with custom clear button */}
+
       <View style={{ position: 'relative', marginBottom: 15 }}>
         <TextInput
           placeholder="Search products..."
@@ -71,9 +60,6 @@ export default function HomeScreen() {
             borderWidth: 1,
             borderColor: theme.border,
           }}
-          autoCorrect={false}
-          returnKeyType="search"
-          onSubmitEditing={() => Keyboard.dismiss()}
         />
 
         {searchQuery.length > 0 && (
@@ -90,80 +76,59 @@ export default function HomeScreen() {
               borderRadius: 15,
               backgroundColor: theme.border,
             }}
-            hitSlop={10}
           >
             <Text style={{ fontSize: 18, color: theme.textSecondary }}>×</Text>
           </Pressable>
         )}
       </View>
 
-      {/* Product List */}
-      <View style={{ flex: 1 }}>
-        <FlatList
-          data={filteredProducts}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{
-            paddingBottom: 20,
-          }}
-          keyboardShouldPersistTaps="handled"
-          ListEmptyComponent={
-            searchQuery.length > 0 ? (
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 18, color: theme.textPrimary }}>
-                  No products found for "{searchQuery}"
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => {
+
+          const currentQty = cart.find(c => c.id === item.id)?.quantity || 0;
+
+          // 👇 NOW REAL STOCK AFTER CHECKOUT
+          const availableStock = (stocks[item.id] || 0) - currentQty;
+
+          const canAdd = availableStock > 0;
+
+          return (
+            <View style={styles.card}>
+              <Image source={{ uri: item.image }} style={styles.img} />
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>{item.name}</Text>
+                <Text style={styles.price}>₱{item.price}</Text>
+
+                <Text style={{ fontSize: 14, color: theme.textSecondary }}>
+                  Stock: {availableStock}
                 </Text>
               </View>
-            ) : null
-          }
-          renderItem={({ item }) => {
-            const currentQty = cart.find((c) => c.id === item.id)?.quantity || 0;
-            const availableStock = (initialStocks[item.id] || 0) - currentQty;
-            const canAdd = availableStock > 0;
 
-            return (
-              <View style={styles.card}>
-                <Image source={{ uri: item.image }} style={styles.img} />
-
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.title}>{item.name}</Text>
-                  <Text style={styles.price}>₱{item.price}</Text>
-                  <Text style={{ fontSize: 14, color: theme.textSecondary, marginTop: 4 }}>
-                    Stock: {availableStock}
+              {canAdd ? (
+                <Pressable
+                  onPress={() => addToCart(item)}
+                  style={styles.btn}
+                >
+                  <Text style={styles.btnText}>
+                    Add to Cart {currentQty > 0 ? `(${currentQty})` : ''}
+                  </Text>
+                </Pressable>
+              ) : (
+                <View style={[styles.btn, { backgroundColor: theme.surface }]}>
+                  <Text style={[styles.btnText, { color: theme.textSecondary }]}>
+                    Out of Stock
                   </Text>
                 </View>
+              )}
 
-                {/* Button with quantity inside text when applicable */}
-                {canAdd ? (
-                  <Pressable
-                    onPress={() => addToCart(item)}
-                    style={({ pressed }) => [
-                      styles.btn,
-                      pressed && { opacity: 0.8 },
-                    ]}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={styles.btnText}>Add to Cart</Text>
-                      {currentQty > 0 && (
-                        <Text style={[styles.btnText, { marginLeft: 8 }]}>
-                          ({currentQty})
-                        </Text>
-                      )}
-                    </View>
-                  </Pressable>
-                ) : (
-                  <View style={[styles.btn, { backgroundColor: theme.surface }]}>
-                    <Text style={[styles.btnText, { color: theme.textSecondary }]}>
-                      Out of Stock
-                    </Text>
-                  </View>
-                )}
-              </View>
-            );
-          }}
-        />
-      </View>
+            </View>
+          );
+        }}
+      />
 
-      {/* Bottom Button – shows only the count of distinct items */}
       <Button
         title={`GO TO CART${cart.length > 0 ? ` (${cart.length})` : ''}`}
         onPress={() => navigation.navigate('Cart')}

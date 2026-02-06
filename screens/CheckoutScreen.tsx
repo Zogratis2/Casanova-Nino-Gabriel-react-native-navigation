@@ -1,9 +1,3 @@
-// Updated CheckoutScreen.tsx – now uses FlatList for smooth scrolling (even with many items)
-// Layout exactly matches HomeScreen/CartScreen structure
-// Total + Checkout button only appear when cart has items
-// Quantity displayed (read-only)
-// Reuses global styles fully
-
 import { View, Text, FlatList, Image, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../contexts/CartContext';
@@ -12,7 +6,9 @@ import { COLORS, getStyles } from '../styles/GlobalStyles';
 
 export default function CheckoutScreen() {
   const navigation = useNavigation<any>();
-  const { cart, clearCart } = useCart();
+
+  // 👇 USING NEW FUNCTION
+  const { cart, checkoutAndReduceStock } = useCart();
 
   const { isDarkMode } = useTheme();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
@@ -26,7 +22,7 @@ export default function CheckoutScreen() {
       {
         text: 'OK',
         onPress: () => {
-          clearCart();
+          checkoutAndReduceStock();   // ✅ STOCK DECREASES HERE
           navigation.navigate('Home' as never);
         },
       },
@@ -35,38 +31,36 @@ export default function CheckoutScreen() {
 
   return (
     <View style={{ padding: 20, flex: 1, backgroundColor: theme.background }}>
-      <View style={{ flex: 1 }}>
-        <FlatList
-          data={cart}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={
-            isEmpty
-              ? { flexGrow: 1 }
-              : { paddingBottom: 120 } // Space for total row + button (adjust if needed)
-          }
-          ListEmptyComponent={
-            <View style={globalStyles.cartEmptyContainer}>
-              <Text style={globalStyles.cartEmptyTitle}>Your cart is empty</Text>
-              <Text style={globalStyles.cartEmptySubtitle}>Nothing to checkout</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View style={globalStyles.card}>
-              <Image source={{ uri: item.image }} style={globalStyles.img} />
 
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={globalStyles.title}>{item.name}</Text>
-                <Text style={globalStyles.checkoutQuantityText}>
-                  Quantity: {item.quantity}
-                </Text>
-                <Text style={globalStyles.price}>₱{item.price * item.quantity}</Text>
-              </View>
-            </View>
-          )}
-        />
-      </View>
+      <FlatList
+        data={cart}
+        keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={
+          <View style={globalStyles.cartEmptyContainer}>
+            <Text style={globalStyles.cartEmptyTitle}>Your cart is empty</Text>
+            <Text style={globalStyles.cartEmptySubtitle}>Nothing to checkout</Text>
+          </View>
+        }
 
-      {/* Total + Checkout button – only shown when cart has items */}
+        renderItem={({ item }) => (
+          <View style={globalStyles.card}>
+            <Image source={{ uri: item.image }} style={globalStyles.img} />
+
+            <View style={{ flex: 1 }}>
+              <Text style={globalStyles.title}>{item.name}</Text>
+
+              <Text style={globalStyles.checkoutQuantityText}>
+                Quantity: {item.quantity}
+              </Text>
+
+              <Text style={globalStyles.price}>
+                ₱{item.price * item.quantity}
+              </Text>
+            </View>
+          </View>
+        )}
+      />
+
       {!isEmpty && (
         <View>
           <View style={globalStyles.cartTotalRow}>
@@ -77,6 +71,7 @@ export default function CheckoutScreen() {
           <Button title="Checkout" onPress={handleCheckout} />
         </View>
       )}
+
     </View>
   );
 }
